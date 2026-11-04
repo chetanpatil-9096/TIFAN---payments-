@@ -358,16 +358,18 @@ window.registerStudent=async()=>{
  try{
   const codeRef=doc(db,"registrationCodes",code),codeSnap=await getDoc(codeRef);
   if(!codeSnap.exists()||codeSnap.data().used){throw new Error("Invalid, expired, or already-used registration code. Contact your admin.")}
-  const codeData=codeSnap.data(),profileRef=doc(db,"studentProfiles",codeData.profileId);
+  const codeData=codeSnap.data();
   secondaryApp=initializeApp(firebaseConfig,"student-register-"+Date.now());secondaryAuth=getAuth(secondaryApp);
   const credential=await createUserWithEmailAndPassword(secondaryAuth,email,password);createdUser=credential.user;
-  // Use Firestore authenticated as the newly created student.
+  // All transaction references must belong to the same secondary Firestore instance.
   const secondaryDb=getFirestore(secondaryApp);
+  const secondaryCodeRef=doc(secondaryDb,"registrationCodes",code);
+  const secondaryProfileRef=doc(secondaryDb,"studentProfiles",codeData.profileId);
   await runTransaction(secondaryDb,async tx=>{
-    const freshCode=await tx.get(codeRef);
+    const freshCode=await tx.get(secondaryCodeRef);
     if(!freshCode.exists()||freshCode.data().used)throw new Error("This registration code has already been used.");
-    tx.update(codeRef,{used:true,uid:createdUser.uid,email,usedAt:Date.now()});
-    tx.update(profileRef,{uid:createdUser.uid,email,registrationCodeId:code,updatedAt:Date.now()});
+    tx.update(secondaryCodeRef,{used:true,uid:createdUser.uid,email,usedAt:Date.now()});
+    tx.update(secondaryProfileRef,{uid:createdUser.uid,email,registrationCodeId:code,updatedAt:Date.now()});
   });
   await sendEmailVerification(createdUser);await signOut(secondaryAuth);
   setStatus("registrationStatus","Account created for "+email+". Check your email and verify it, then log in. Your student profile is linked automatically.");
