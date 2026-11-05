@@ -79,7 +79,6 @@ input,select,textarea{color:#302719;background:#fff;border-color:#d8c18b}input::
 .field label,.small,.count,.branch,.payment-note,.qr-help,.chat-meta{color:#756b5b}
 .student-card,.payment-box,.qr-payment,.expense{color:#302719;background:linear-gradient(145deg,#fff,#fbf7ed);border-color:#d8c18b}
 .profile-description{background:repeating-linear-gradient(135deg,#fffdf8 0 12px,#fbf6e9 12px 24px);border-left-color:#c7a45a}
-.work-assignment-box{margin-top:18px;border:1px solid #c7a45a}.work-assignment-box h3{margin:0 0 10px}.work-assignment-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;min-height:28px}
 .student-card:hover{border-color:#b28a3d;box-shadow:0 10px 24px #8a6b2a18;transform:translateY(-2px)}
 .btn{transition:transform .15s ease,filter .15s ease}.primary,.purple,.blue,.gold{background:linear-gradient(135deg,#fffdf8,#efe2c2);color:#5c4720;border:1px solid #c7a45a;box-shadow:inset 0 1px #fff}
 .logout,.back{background:linear-gradient(135deg,#e9dfc8,#d5bd86);color:#46351b;border:1px solid #b99a55}
@@ -120,12 +119,12 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 .chat-msg.mine{background:rgba(241,229,200,.86)!important}.chat-msg.theirs{background:rgba(255,255,255,.82)!important}
 @media(max-width:720px){body{background-attachment:scroll!important;background-position:center center!important}}
 
-.student-top-strip{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:0 0 12px;border:1px solid rgba(199,164,90,.75);border-radius:16px;background:rgba(255,252,245,.96);backdrop-filter:blur(12px);position:sticky;top:0;z-index:1000;box-shadow:0 5px 18px rgba(80,60,20,.12)}
+.student-top-strip{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:0 0 12px;border:1px solid rgba(199,164,90,.55);border-radius:16px;background:rgba(255,252,245,.82);backdrop-filter:blur(5px);position:relative;z-index:20}
 .student-strip-photo{width:46px;height:46px;border:0;border-radius:50%;padding:0;overflow:hidden;background:#e8e4ff;display:flex;align-items:center;justify-content:center;font-size:25px;position:relative;flex:0 0 46px}
 .student-strip-photo img{width:100%;height:100%;object-fit:cover;display:none}.student-strip-photo.has-photo img{display:block}.student-strip-photo.has-photo #studentStripFallback{display:none}
 .student-strip-title{display:flex;flex-direction:column;min-width:0;flex:1}.student-strip-title b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.student-strip-title span{font-size:12px;opacity:.7}
 .student-strip-menu-wrap{position:relative}.student-strip-menu-btn{width:42px;height:42px;border:1px solid rgba(180,145,65,.5);border-radius:12px;background:rgba(255,255,255,.75);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}.student-strip-menu-btn span{width:20px;height:2px;background:#493b24;border-radius:2px;display:block}
-.student-strip-menu{position:absolute;right:0;top:48px;min-width:210px;padding:7px;border:1px solid rgba(199,164,90,.6);border-radius:12px;background:#fffdf7;box-shadow:0 8px 22px rgba(0,0,0,.15);z-index:1001}.student-strip-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:8px;font-weight:600;color:#302719}.student-strip-menu button:active{background:#f2e8cf}
+.student-strip-menu{position:absolute;right:0;top:48px;min-width:190px;padding:7px;border:1px solid rgba(199,164,90,.6);border-radius:12px;background:#fffdf7;box-shadow:0 8px 22px rgba(0,0,0,.15)}.student-strip-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:8px;font-weight:600;color:#302719}.student-strip-menu button:active{background:#f2e8cf}
 @media(max-width:720px){.student-top-strip{margin-left:0;margin-right:0}}
 </style>
 </head>
@@ -153,18 +152,15 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 <div id="app" class="hidden">
 <div class="wrap">
 <div id="studentTopStrip" class="student-top-strip hidden">
-  <button type="button" class="student-strip-photo" aria-label="Open my profile" onclick="openMyProfileFromMenu()"><img id="studentStripPhoto" alt="My profile photo"><span id="studentStripFallback">👨‍🎓</span></button>
+  <button type="button" class="student-strip-photo" aria-label="Open my profile" onclick="openProfile(ownStudentName())"><img id="studentStripPhoto" alt="My profile photo"><span id="studentStripFallback">👨‍🎓</span></button>
   <div class="student-strip-title"><b id="studentStripName">Student</b><span>TEAM Vajra</span></div>
-  <div class="student-strip-menu-wrap"><button type="button" id="studentStripMenuBtn" class="student-strip-menu-btn" aria-label="Open menu" aria-expanded="false" onclick="toggleStudentStripMenu()"><span></span><span></span><span></span></button>
-    <div id="studentStripMenu" class="student-strip-menu hidden">
-      <button type="button" id="menuMyProfile" onclick="openMyProfileFromMenu()">👤 My Profile</button>
-      <button type="button" id="menuEditPhoto" onclick="editOwnProfilePhoto()">📷 Edit Profile Photo</button>
-      <button type="button" onclick="openChat()">💬 What's Up</button>
-      <button type="button" onclick="logout()">↪ Logout</button>
-    </div>
+  <div class="student-strip-menu-wrap"><button type="button" id="studentStripMenuBtn" class="student-strip-menu-btn" aria-label="Open student menu" aria-expanded="false" onclick="toggleStudentStripMenu()"><span></span><span></span><span></span></button>
+    <div id="studentStripMenu" class="student-strip-menu hidden"><button type="button" onclick="editOwnProfilePhoto()">📷 Edit Profile Photo</button><button type="button" onclick="openProfile(ownStudentName())">👤 My Profile</button></div>
   </div>
 </div>
 <section class="hero"><div class="eyebrow">🌾 AGRICULTURAL PROJECT RECORD</div><h1>🚜 TEAM Vajra Portal 2026 - 2027</h1><p>Student directory • Payment history • Project expenses</p></section>
+<section class="card no-print" style="margin-top:-4px"><div class="chat-nav-row"><div class="userbar" style="flex:1"><div><b id="welcome"></b><div id="userRole" class="role"></div></div><button class="btn logout" onclick="logout()">Logout</button></div><button id="chatTab" class="btn chat-toggle" onclick="openChat()">💬 What's Up <span id="unreadBadge" class="unread-badge hidden">0</span></button></div></section>
+
 <!-- ADMIN CONTROLS -->
 <section id="adminPanel" class="hidden">
   <section class="card no-print">
@@ -262,15 +258,6 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
       <div class="profile-photo-wrap"><img id="profilePhoto" class="profile-photo" alt="Student photo"><input id="photoInput" class="hidden" type="file" accept="image/*" onchange="uploadPhoto(event)"></div>
       <div><div id="profileTagView"></div><h2 id="profileName" class="profile-name"></h2><div id="profileBranch" class="branch"></div><div id="profileDescriptionView" class="profile-description"></div><div id="photoHelp" class="small" style="margin-top:10px"><svg class="custom-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13" r="3.5"/></svg> Student photo is managed by the admin.</div><div id="profileAdminActions" class="profile-admin-actions hidden"><button class="btn gold" onclick="editStudentName(document.getElementById('profileName').textContent)">✏️ Edit Name</button><button class="btn danger" onclick="deleteStudentProfile(document.getElementById('profileName').textContent)">🗑 Delete Student Profile</button></div></div>
     </div>
-    <div id="workAssignmentBox" class="payment-box work-assignment-box">
-      <h3>📌 Work Assigned</h3>
-      <div id="workAssignmentView" class="work-assignment-text">No work has been assigned yet.</div>
-      <div id="workAssignmentAdminEditor" class="hidden">
-        <div class="field"><label>Assign work for this student</label><textarea id="workAssignmentInput" placeholder="Type the work assigned to this student..."></textarea></div>
-        <button class="btn gold" style="margin-top:10px" onclick="saveWorkAssignment()">💾 Save Assigned Work</button>
-        <div id="workAssignmentStatus" class="small" style="margin-top:8px"></div>
-      </div>
-    </div>
     <div class="history"><h3>💳 Payment History</h3><div id="profilePayments"></div><div class="total-box"><span>Total Paid</span><span id="profileTotal">₹0.00</span></div></div>
     <div class="no-print" style="margin-top:18px">
       <button id="payOptionsToggle" class="btn primary" style="width:100%;font-size:16px" aria-expanded="false" onclick="togglePaymentOptions()">💳 Pay Options ▼</button>
@@ -296,7 +283,7 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 
 <!-- STUDENT HOME -->
 <section id="studentHome">
-  <section class="card"><div class="section-title"><h2>👨‍🎓 Student Directory</h2><span class="small">Students can view every student’s payment history. Pay options are available only on your own profile.</span></div><div id="studentGrid" class="student-grid"></div></section>
+  <section class="card"><div class="section-title"><h2>👨‍🎓 Student Directory</h2><span class="small">Students can open team profiles. Payment options and private payment history are visible only on your own profile.</span></div><div id="studentGrid" class="student-grid"></div></section>
   <section class="card"><button class="btn purple" style="width:100%;font-size:16px" onclick="openExpenses()">💰 Project Expenses</button><div class="small" style="margin-top:8px;text-align:center">All students can view project expenses. Only admin can add or edit them.</div></section>
 </section>
 
@@ -456,7 +443,7 @@ async function loadAll(){try{
     const mine=Object.values(profiles).find(p=>String(p.email||"").toLowerCase()===String(currentUser.email||"").toLowerCase());
     if(mine && mine.uid!==currentUser.uid){await updateDoc(doc(db,"studentProfiles",mine.id),{uid:currentUser.uid});mine.uid=currentUser.uid;}
   }
-  let qs=await getDocs(query(collection(db,"payments"),orderBy("date","desc")));
+  let qs=isAdmin?await getDocs(query(collection(db,"payments"),orderBy("date","desc"))):await getDocs(query(collection(db,"payments"),where("studentUid","==",currentUser.uid)));
   records=qs.docs.map(d=>({id:d.id,...d.data()}));
   // One-time gradual migration: admin links legacy payment records to known student UIDs.
   if(isAdmin){const linked=[];for(const r of records){const rn=String(r.student||"").trim().toLowerCase();const p=profiles[keyFor(r.student)]||Object.values(profiles).find(x=>String(x.name||"").trim().toLowerCase()===rn);if(p?.uid&&r.studentUid!==p.uid)linked.push(updateDoc(doc(db,"payments",r.id),{studentUid:p.uid}));}if(linked.length){await Promise.all(linked);qs=await getDocs(query(collection(db,"payments"),orderBy("date","desc")));records=qs.docs.map(d=>({id:d.id,...d.data()}));}}
@@ -481,7 +468,7 @@ async function syncPublicStudentDirectory(){
   await Promise.all(wanted.map(name=>{
     const p=profiles[keyFor(name)]||Object.values(profiles).find(x=>String(x.name||"").trim().toLowerCase()===name.toLowerCase())||{};
     const totalPaid=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).reduce((sum,r)=>sum+Number(r.payment||0),0);
-    return setDoc(doc(db,"studentDirectory",keyFor(name)),{name,photoData:p.photoData||"",description:p.description||"",tag:p.tag||"",workAssignment:p.workAssignment||"",totalPaid,updatedAt:Date.now()},{merge:true});
+    return setDoc(doc(db,"studentDirectory",keyFor(name)),{name,photoData:p.photoData||"",description:p.description||"",tag:p.tag||"",totalPaid,updatedAt:Date.now()},{merge:true});
   }));
   await Promise.all(snap.docs.filter(d=>!wantedIds.has(d.id)).map(d=>deleteDoc(doc(db,"studentDirectory",d.id))));
   directoryNames=wanted;
@@ -659,7 +646,6 @@ function updatePaymentQR(){
   try{new QRCode(qr,{text:payload,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}catch(e){qr.innerHTML="<div class=\"small\">QR could not be generated: "+esc(e.message)+"</div>";}
 }
 window.openProfile=name=>{
-  closeStudentStripMenu();
   currentStudent=name;
   const isOwnProfile=isAdmin||String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase();
   if(!isAdmin&&!isOwnProfile){const publicProfile=(directoryEntries||[]).find(d=>String(d.name||"").trim().toLowerCase()===String(name).trim().toLowerCase());if(publicProfile)profiles[keyFor(name)]={...publicProfile,id:publicProfile.id||keyFor(name)};}
@@ -674,38 +660,10 @@ window.openProfile=name=>{
   const paymentArea=payButton?.parentElement;
   if(paymentArea)paymentArea.classList.toggle("hidden",!isOwnProfile);
   if(payPanel)payPanel.classList.add("hidden");if(payButton){payButton.setAttribute("aria-expanded","false");payButton.textContent="💳 Pay Options ▼";}
-  const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.remove("hidden");
+  const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.toggle("hidden",!isOwnProfile);
   renderProfile(name);updatePaymentQR();scrollTo(0,0);
 };
-function renderProfile(name){
-  const privateProfile=profiles[keyFor(name)]||{};
-  const publicProfile=(directoryEntries||[]).find(d=>String(d.name||"").trim().toLowerCase()===String(name).trim().toLowerCase())||{};
-  const p=isAdmin?privateProfile:{...publicProfile,...(String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase()?privateProfile:{})};
-  $("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";
-  $("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";
-  $("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);
-  const assignment=p.workAssignment||"";
-  $("workAssignmentView").textContent=assignment||"No work has been assigned yet.";
-  $("workAssignmentAdminEditor").classList.toggle("hidden",!isAdmin);
-  $("workAssignmentInput").value=isAdmin?assignment:"";
-  $("workAssignmentStatus").textContent="";
-  let rows=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';
-  $("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR();
-}
-window.saveWorkAssignment=async()=>{
-  if(!isAdmin||!currentStudent){alert("Admin account required.");return}
-  const text=$("workAssignmentInput").value.trim();
-  try{
-    const profileId=keyFor(currentStudent);
-    await setDoc(doc(db,"studentProfiles",profileId),{name:currentStudent,workAssignment:text,workAssignmentUpdatedAt:Date.now(),workAssignmentBy:currentUser.email||""},{merge:true});
-    if(!profiles[profileId])profiles[profileId]={id:profileId,name:currentStudent};
-    profiles[profileId].workAssignment=text;
-    await syncPublicStudentDirectory();
-    renderProfile(currentStudent);
-    $("workAssignmentStatus").textContent="Assigned work saved.";
-  }catch(e){$("workAssignmentStatus").textContent="Could not save assigned work: "+(e.message||e)}
-};
+function renderProfile(name){let p=profiles[keyFor(name)]||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let canSeePayments=isAdmin||String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase();let rows=canSeePayments?records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date))):[];let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
 window.choosePhoto=()=>{if(isAdmin){alert("Admin photo upload is managed from the student profile manager.");return}editOwnProfilePhoto()};
 window.editOwnProfilePhoto=()=>{if(isAdmin||!ownStudentProfile()){alert("Student profile is not available.");return}$("photoInput").click();closeStudentStripMenu()};
 window.uploadPhoto=async ev=>{
@@ -721,20 +679,9 @@ window.uploadPhoto=async ev=>{
     alert("Profile photo updated successfully.");
   }catch(e){alert("Could not update profile photo: "+(e.message||e))}
 };
-window.openMyProfileFromMenu=()=>{if(!isAdmin&&ownStudentName())openProfile(ownStudentName());else if(isAdmin)showAdminHome();closeStudentStripMenu()};
 window.toggleStudentStripMenu=()=>{const menu=$("studentStripMenu"),btn=$("studentStripMenuBtn");if(!menu||!btn)return;const open=menu.classList.contains("hidden");menu.classList.toggle("hidden",!open);btn.setAttribute("aria-expanded",String(open))};
 function closeStudentStripMenu(){const menu=$("studentStripMenu"),btn=$("studentStripMenuBtn");if(menu)menu.classList.add("hidden");if(btn)btn.setAttribute("aria-expanded","false")}
-function updateStudentTopStrip(){
-  const strip=$("studentTopStrip");if(!strip)return;
-  const show=!!currentUser;strip.classList.toggle("hidden",!show);if(!show)return;
-  const p=ownStudentProfile()||{};
-  $("studentStripName").textContent=isAdmin?"TEAM VAJRA ADMIN":(p.name||"Student");
-  $("menuMyProfile").textContent=isAdmin?"⚙️ Admin Dashboard":"👤 My Profile";
-  $("menuEditPhoto").classList.toggle("hidden",isAdmin||!p.id);
-  const img=$("studentStripPhoto"),wrap=img.parentElement;
-  if(!isAdmin&&p.photoData){img.src=p.photoData;wrap.classList.add("has-photo")}
-  else{img.removeAttribute("src");wrap.classList.remove("has-photo");$("studentStripFallback").textContent=isAdmin?"👑":"👨‍🎓"}
-}
+function updateStudentTopStrip(){const strip=$("studentTopStrip");if(!strip)return;const show=!isAdmin&&!!ownStudentName();strip.classList.toggle("hidden",!show);if(!show)return;const p=ownStudentProfile()||{};$("studentStripName").textContent=p.name||"Student";const img=$("studentStripPhoto"),wrap=img.parentElement;if(p.photoData){img.src=p.photoData;wrap.classList.add("has-photo")}else{img.removeAttribute("src");wrap.classList.remove("has-photo")}}
 
 function resizeImage(file,max,quality){return new Promise((resolve,reject)=>{let fr=new FileReader();fr.onload=()=>{let im=new Image();im.onload=()=>{let c=document.createElement("canvas"),scale=Math.min(1,max/Math.max(im.width,im.height));c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext("2d").drawImage(im,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",quality))};im.onerror=reject;im.src=fr.result};fr.onerror=reject;fr.readAsDataURL(file)})}
 
@@ -774,7 +721,7 @@ window.resetStudentsAndExpenses=async()=>{
 };
 
 window.saveExpense=async()=>{if(!isAdmin)return;let item=$("expenseItem").value.trim(),amount=Number($("expenseAmount").value),date=$("expenseDate").value,note=$("expenseNote").value.trim();if(!item||!date||$("expenseAmount").value===""||amount<0){alert("Enter expense, amount and date.");return}await addDoc(collection(db,"expenses"),{item,amount,date,note,createdAt:Date.now()});$("expenseItem").value="";$("expenseAmount").value="";$("expenseNote").value="";await loadAll();renderAdminExpenses();setStatus("expenseStatus","Expense added successfully.")};
-window.openChat=()=>{closeStudentStripMenu();chatIsOpen=true;unreadChatCount=0;updateUnreadBadge();$("studentHome").classList.add("hidden");$("profilePage").classList.add("hidden");$("expensePage").classList.add("hidden");if(isAdmin)$("adminPanel").classList.add("hidden");$("chatPage").classList.remove("hidden");loadChat();scrollTo(0,0);};
+window.openChat=()=>{chatIsOpen=true;unreadChatCount=0;updateUnreadBadge();$("studentHome").classList.add("hidden");$("profilePage").classList.add("hidden");$("expensePage").classList.add("hidden");$("chatPage").classList.remove("hidden");loadChat();scrollTo(0,0);};
 function loadChat(){if(chatUnsubscribe)chatUnsubscribe();const q=query(collection(db,"chatMessages"),orderBy("createdAt","asc"));chatUnsubscribe=onSnapshot(q,snap=>{const box=$("chatMessages");box.innerHTML="";if(snap.empty){box.innerHTML='<div class="empty">No messages yet. Start the team chat.</div>';return}let unseen=0;const lastSeen=Number(localStorage.getItem(unreadKey())||0);snap.forEach(d=>{const m=d.data(),mine=(m.uid||"")===currentUser?.uid;if(!mine&&Number(m.createdAt||0)>lastSeen)unseen++;const photo=m.photoData?`<img class="chat-photo" src="${m.photoData}" alt="Shared photo">`:"",text=m.text?`<div>${esc(m.text)}</div>`:"",time=m.createdAt?new Date(Number(m.createdAt)).toLocaleString():"";box.innerHTML+=`<div class="chat-msg ${mine?"mine":"theirs"}"><div class="chat-meta">${esc(m.name||m.email||"User")} • ${esc(time)}</div>${text}${photo}</div>`});if(chatIsOpen){unreadChatCount=0;localStorage.setItem(unreadKey(),String(Date.now()))}else{unreadChatCount=unseen}updateUnreadBadge();box.scrollTop=box.scrollHeight},e=>{$("chatMessages").innerHTML='<div class="status error">Chat could not load: '+esc(e.message)+'</div>'})}
 window.sendChatMessage=async()=>{if(!currentUser)return;const input=$("chatInput"),text=input.value.trim();if(!text)return;try{await addDoc(collection(db,"chatMessages"),{text,photoData:"",uid:currentUser.uid,email:currentUser.email||"",name:displayChatName(),createdAt:Date.now()});input.value=""}catch(e){alert("Message could not be sent: "+e.message)}};
 window.sendChatPhoto=async ev=>{if(!currentUser)return;const file=ev.target.files?.[0];if(!file)return;if(file.size>1500000){alert("Please choose a photo smaller than 1.5 MB.");ev.target.value="";return}try{const data=await resizeImage(file,900,0.72);await addDoc(collection(db,"chatMessages"),{text:"",photoData:data,uid:currentUser.uid,email:currentUser.email||"",name:displayChatName(),createdAt:Date.now()});$("chatPhotoStatus").textContent="Photo sent."}catch(e){alert("Photo could not be sent: "+e.message)}finally{ev.target.value=""}};
