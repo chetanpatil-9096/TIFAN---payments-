@@ -155,11 +155,11 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
   <button type="button" class="student-strip-photo" aria-label="Open my profile" onclick="openProfile(ownStudentName())"><img id="studentStripPhoto" alt="My profile photo"><span id="studentStripFallback">👨‍🎓</span></button>
   <div class="student-strip-title"><b id="studentStripName">Student</b><span>TEAM Vajra</span></div>
   <div class="student-strip-menu-wrap"><button type="button" id="studentStripMenuBtn" class="student-strip-menu-btn" aria-label="Open student menu" aria-expanded="false" onclick="toggleStudentStripMenu()"><span></span><span></span><span></span></button>
-    <div id="studentStripMenu" class="student-strip-menu hidden"><button type="button" onclick="editOwnProfilePhoto()">📷 Edit Profile Photo</button><button type="button" onclick="openProfile(ownStudentName())">👤 My Profile</button></div>
+    <div id="studentStripMenu" class="student-strip-menu hidden"><button type="button" onclick="editOwnProfilePhoto()">📷 Edit Profile Photo</button><button type="button" onclick="openProfile(ownStudentName())">👤 My Profile</button><button type="button" onclick="openChat();closeStudentStripMenu()">💬 What's Up</button><button type="button" onclick="logout()">🚪 Logout</button></div>
   </div>
 </div>
 <section class="hero"><div class="eyebrow">🌾 AGRICULTURAL PROJECT RECORD</div><h1>🚜 TEAM Vajra Portal 2026 - 2027</h1><p>Student directory • Payment history • Project expenses</p></section>
-<section class="card no-print" style="margin-top:-4px"><div class="chat-nav-row"><div class="userbar" style="flex:1"><div><b id="welcome"></b><div id="userRole" class="role"></div></div><button class="btn logout" onclick="logout()">Logout</button></div><button id="chatTab" class="btn chat-toggle" onclick="openChat()">💬 What's Up <span id="unreadBadge" class="unread-badge hidden">0</span></button></div></section>
+<section class="card no-print" style="margin-top:-4px"><div class="chat-nav-row"><div id="userRole" class="role"></div></div></section>
 
 <!-- ADMIN CONTROLS -->
 <section id="adminPanel" class="hidden">
@@ -258,7 +258,7 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
       <div class="profile-photo-wrap"><img id="profilePhoto" class="profile-photo" alt="Student photo"><input id="photoInput" class="hidden" type="file" accept="image/*" onchange="uploadPhoto(event)"></div>
       <div><div id="profileTagView"></div><h2 id="profileName" class="profile-name"></h2><div id="profileBranch" class="branch"></div><div id="profileDescriptionView" class="profile-description"></div><div id="photoHelp" class="small" style="margin-top:10px"><svg class="custom-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13" r="3.5"/></svg> Student photo is managed by the admin.</div><div id="profileAdminActions" class="profile-admin-actions hidden"><button class="btn gold" onclick="editStudentName(document.getElementById('profileName').textContent)">✏️ Edit Name</button><button class="btn danger" onclick="deleteStudentProfile(document.getElementById('profileName').textContent)">🗑 Delete Student Profile</button></div></div>
     </div>
-    <div class="history"><h3>💳 Payment History</h3><div id="profilePayments"></div><div class="total-box"><span>Total Paid</span><span id="profileTotal">₹0.00</span></div></div>
+    <div id="assignedWorkBox" class="card" style="margin-top:18px"><h3>📌 Assigned Work</h3><div id="assignedWorkText">No work assigned yet.</div><div id="assignedWorkAdmin" class="hidden"><textarea id="assignedWorkInput" placeholder="Type work assigned to this student"></textarea><button class="btn gold" onclick="saveAssignedWork()">Save Assigned Work</button></div></div><div class="history"><h3>💳 Payment History</h3><div id="profilePayments"></div><div class="total-box"><span>Total Paid</span><span id="profileTotal">₹0.00</span></div></div>
     <div class="no-print" style="margin-top:18px">
       <button id="payOptionsToggle" class="btn primary" style="width:100%;font-size:16px" aria-expanded="false" onclick="togglePaymentOptions()">💳 Pay Options ▼</button>
       <div id="paymentOptions" class="payment-box hidden">
@@ -410,7 +410,6 @@ async function showAuthenticatedUser(user){
   currentUser=user;isAdmin=ADMIN_EMAILS.includes((user.email||"").toLowerCase());
   const codeAdmin=isRegistrationCodeAdmin();const accountsNav=$("studentAccountsNav");const accountsSection=$("adminSection_studentAccounts");if(accountsNav)accountsNav.classList.toggle("hidden",!codeAdmin);if(accountsSection)accountsSection.classList.toggle("hidden",!codeAdmin);
   $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");
-  $("welcome").textContent="Welcome, "+(user.email||"User")+" 👋";
   $("userRole").textContent=isAdmin?"ADMIN":"STUDENT • READ ONLY PAYMENTS";
   $("adminPanel").classList.toggle("hidden",!isAdmin);await loadAll();if(!isAdmin&&ownStudentName())openProfile(ownStudentName());else showHome();
 }
@@ -443,7 +442,7 @@ async function loadAll(){try{
     const mine=Object.values(profiles).find(p=>String(p.email||"").toLowerCase()===String(currentUser.email||"").toLowerCase());
     if(mine && mine.uid!==currentUser.uid){await updateDoc(doc(db,"studentProfiles",mine.id),{uid:currentUser.uid});mine.uid=currentUser.uid;}
   }
-  let qs=isAdmin?await getDocs(query(collection(db,"payments"),orderBy("date","desc"))):await getDocs(query(collection(db,"payments"),where("studentUid","==",currentUser.uid)));
+  let qs=await getDocs(query(collection(db,"payments"),orderBy("date","desc")));
   records=qs.docs.map(d=>({id:d.id,...d.data()}));
   // One-time gradual migration: admin links legacy payment records to known student UIDs.
   if(isAdmin){const linked=[];for(const r of records){const rn=String(r.student||"").trim().toLowerCase();const p=profiles[keyFor(r.student)]||Object.values(profiles).find(x=>String(x.name||"").trim().toLowerCase()===rn);if(p?.uid&&r.studentUid!==p.uid)linked.push(updateDoc(doc(db,"payments",r.id),{studentUid:p.uid}));}if(linked.length){await Promise.all(linked);qs=await getDocs(query(collection(db,"payments"),orderBy("date","desc")));records=qs.docs.map(d=>({id:d.id,...d.data()}));}}
@@ -660,10 +659,13 @@ window.openProfile=name=>{
   const paymentArea=payButton?.parentElement;
   if(paymentArea)paymentArea.classList.toggle("hidden",!isOwnProfile);
   if(payPanel)payPanel.classList.add("hidden");if(payButton){payButton.setAttribute("aria-expanded","false");payButton.textContent="💳 Pay Options ▼";}
-  const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.toggle("hidden",!isOwnProfile);
+  const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.remove("hidden");
   renderProfile(name);updatePaymentQR();scrollTo(0,0);
 };
-function renderProfile(name){let p=profiles[keyFor(name)]||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let canSeePayments=isAdmin||String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase();let rows=canSeePayments?records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date))):[];let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
+function renderProfile(name){let p=profiles[keyFor(name)]||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let rows=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date)));let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
+let currentWorkProfileId=null;
+window.saveAssignedWork=async()=>{if(!isAdmin||!currentWorkProfileId)return;const work=$("assignedWorkInput").value.trim();try{await setDoc(doc(db,"studentAssignments",currentWorkProfileId),{profileId:currentWorkProfileId,student:currentStudent,work,updatedAt:Date.now(),updatedBy:currentUser.email},{merge:true});$("assignedWorkText").textContent=work||"No work assigned yet.";alert("Assigned work saved.");}catch(e){alert("Could not save work: "+e.message)}};
+async function loadAssignedWork(name){const p=profiles[keyFor(name)]||{};currentWorkProfileId=p.id||keyFor(name);$("assignedWorkAdmin").classList.toggle("hidden",!isAdmin);try{const snap=await getDoc(doc(db,"studentAssignments",currentWorkProfileId));const work=snap.exists()?String(snap.data().work||""):"";$("assignedWorkText").textContent=work||"No work assigned yet.";if(isAdmin)$("assignedWorkInput").value=work;}catch(e){$("assignedWorkText").textContent="Work details unavailable.";}}
 window.choosePhoto=()=>{if(isAdmin){alert("Admin photo upload is managed from the student profile manager.");return}editOwnProfilePhoto()};
 window.editOwnProfilePhoto=()=>{if(isAdmin||!ownStudentProfile()){alert("Student profile is not available.");return}$("photoInput").click();closeStudentStripMenu()};
 window.uploadPhoto=async ev=>{
