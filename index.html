@@ -119,7 +119,7 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 .chat-msg.mine{background:rgba(241,229,200,.86)!important}.chat-msg.theirs{background:rgba(255,255,255,.82)!important}
 @media(max-width:720px){body{background-attachment:scroll!important;background-position:center center!important}}
 
-.student-top-strip{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:0 0 12px;border:1px solid rgba(199,164,90,.55);border-radius:16px;background:rgba(255,252,245,.82);backdrop-filter:blur(5px);position:relative;z-index:20}
+.student-top-strip{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:0 0 12px;border:1px solid rgba(199,164,90,.55);border-radius:16px;background:rgba(255,252,245,.94);backdrop-filter:blur(5px);position:sticky;top:0;z-index:1000;box-shadow:0 4px 14px rgba(20,25,35,.10)}
 .student-strip-photo{width:46px;height:46px;border:0;border-radius:50%;padding:0;overflow:hidden;background:#e8e4ff;display:flex;align-items:center;justify-content:center;font-size:25px;position:relative;flex:0 0 46px}
 .student-strip-photo img{width:100%;height:100%;object-fit:cover;display:none}.student-strip-photo.has-photo img{display:block}.student-strip-photo.has-photo #studentStripFallback{display:none}
 .student-strip-title{display:flex;flex-direction:column;min-width:0;flex:1}.student-strip-title b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.student-strip-title span{font-size:12px;opacity:.7}
@@ -283,7 +283,7 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 
 <!-- STUDENT HOME -->
 <section id="studentHome">
-  <section class="card"><div class="section-title"><h2>👨‍🎓 Student Directory</h2><span class="small">Students can open team profiles. Payment options and private payment history are visible only on your own profile.</span></div><div id="studentGrid" class="student-grid"></div></section>
+  <section class="card"><div class="section-title"><h2>👨‍🎓 Student Directory</h2></div><div id="studentGrid" class="student-grid"></div></section>
   <section class="card"><button class="btn purple" style="width:100%;font-size:16px" onclick="openExpenses()">💰 Project Expenses</button><div class="small" style="margin-top:8px;text-align:center">All students can view project expenses. Only admin can add or edit them.</div></section>
 </section>
 
@@ -644,7 +644,7 @@ function updatePaymentQR(){
   const payload=makeUpiUrl(2000,name);
   try{new QRCode(qr,{text:payload,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}catch(e){qr.innerHTML="<div class=\"small\">QR could not be generated: "+esc(e.message)+"</div>";}
 }
-window.openProfile=name=>{
+window.openProfile=async name=>{
   currentStudent=name;
   const isOwnProfile=isAdmin||String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase();
   if(!isAdmin&&!isOwnProfile){const publicProfile=(directoryEntries||[]).find(d=>String(d.name||"").trim().toLowerCase()===String(name).trim().toLowerCase());if(publicProfile)profiles[keyFor(name)]={...publicProfile,id:publicProfile.id||keyFor(name)};}
@@ -660,11 +660,11 @@ window.openProfile=name=>{
   if(paymentArea)paymentArea.classList.toggle("hidden",!isOwnProfile);
   if(payPanel)payPanel.classList.add("hidden");if(payButton){payButton.setAttribute("aria-expanded","false");payButton.textContent="💳 Pay Options ▼";}
   const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.remove("hidden");
-  renderProfile(name);updatePaymentQR();scrollTo(0,0);
+  renderProfile(name);await loadAssignedWork(name);updatePaymentQR();scrollTo(0,0);
 };
 function renderProfile(name){let p=profiles[keyFor(name)]||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let rows=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date)));let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
 let currentWorkProfileId=null;
-window.saveAssignedWork=async()=>{if(!isAdmin||!currentWorkProfileId)return;const work=$("assignedWorkInput").value.trim();try{await setDoc(doc(db,"studentAssignments",currentWorkProfileId),{profileId:currentWorkProfileId,student:currentStudent,work,updatedAt:Date.now(),updatedBy:currentUser.email},{merge:true});$("assignedWorkText").textContent=work||"No work assigned yet.";alert("Assigned work saved.");}catch(e){alert("Could not save work: "+e.message)}};
+window.saveAssignedWork=async()=>{if(!isAdmin||!currentWorkProfileId){alert("Open a student profile first.");return}const work=$("assignedWorkInput").value.trim();const student=$("profileName").textContent.trim();try{await setDoc(doc(db,"studentAssignments",currentWorkProfileId),{profileId:currentWorkProfileId,student,work,updatedAt:Date.now(),updatedBy:currentUser.email},{merge:true});$("assignedWorkText").textContent=work||"No work assigned yet.";alert("Assigned work saved for "+student+".");}catch(e){alert("Could not save work: "+e.message)}};
 async function loadAssignedWork(name){const p=profiles[keyFor(name)]||{};currentWorkProfileId=p.id||keyFor(name);$("assignedWorkAdmin").classList.toggle("hidden",!isAdmin);try{const snap=await getDoc(doc(db,"studentAssignments",currentWorkProfileId));const work=snap.exists()?String(snap.data().work||""):"";$("assignedWorkText").textContent=work||"No work assigned yet.";if(isAdmin)$("assignedWorkInput").value=work;}catch(e){$("assignedWorkText").textContent="Work details unavailable.";}}
 window.choosePhoto=()=>{if(isAdmin){alert("Admin photo upload is managed from the student profile manager.");return}editOwnProfilePhoto()};
 window.editOwnProfilePhoto=()=>{if(isAdmin||!ownStudentProfile()){alert("Student profile is not available.");return}$("photoInput").click();closeStudentStripMenu()};
