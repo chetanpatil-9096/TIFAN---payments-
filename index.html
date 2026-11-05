@@ -164,7 +164,7 @@ input,select,textarea{background:rgba(255,255,255,.88)!important}
 <!-- ADMIN CONTROLS -->
 <section id="adminPanel" class="hidden">
   <section class="card no-print">
-    <div class="section-title"><h2>👨‍💼 Admin Dashboard</h2><span class="small">Select an option below.</span></div>
+    <div class="section-title"><h2>👨‍💼 Admin Dashboard</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="small">Select an option below.</span><button type="button" class="btn logout" onclick="logout()">🚪 Logout</button></div></div>
     <div class="admin-nav">
       <button class="btn blue" onclick="showAdminSection('studentDirectory')">👨‍🎓 Student Directory</button>
       <button class="btn purple" onclick="showAdminSection('adminControl')">⚙️ Admin Control</button>
@@ -427,7 +427,7 @@ window.showAdminSection=id=>{
   document.querySelectorAll(".admin-section").forEach(s=>s.classList.remove("active"));
   const el=$("adminSection_"+id);if(el){el.classList.add("active");dashboard.classList.add("hidden");}
   if(id==="studentDirectory")renderAdminStudentDirectory();
-  if(el&&!el.querySelector(".admin-home-btn")){const b=document.createElement("button");b.className="btn back admin-home-btn";b.textContent="← Admin Dashboard Home";b.onclick=window.showAdminHome;el.prepend(b);}
+  if(el&&!el.querySelector(".admin-home-btn")){const row=document.createElement("div");row.className="buttons admin-section-actions";row.style.marginBottom="12px";const b=document.createElement("button");b.className="btn back admin-home-btn";b.textContent="← Admin Dashboard Home";b.onclick=window.showAdminHome;const out=document.createElement("button");out.className="btn logout";out.type="button";out.textContent="🚪 Logout";out.onclick=window.logout;row.append(b,out);el.prepend(row);}
 };
 window.showAdminHome=()=>{if(!isAdmin)return;document.querySelectorAll(".admin-section").forEach(s=>s.classList.remove("active"));const dashboard=$("adminPanel").querySelector(".card.no-print");dashboard.classList.remove("hidden");scrollTo(0,0);};
 
@@ -474,6 +474,7 @@ async function syncPublicStudentDirectory(){
   const refreshed=await getDocs(collection(db,"studentDirectory"));
   directoryEntries=refreshed.docs.map(d=>({id:d.id,...d.data()}));
 }
+function profileForName(name){const key=keyFor(name);return profiles[key]||Object.values(profiles||{}).find(p=>String(p.name||"").trim().toLowerCase()===String(name||"").trim().toLowerCase())||null}
 function ownStudentProfile(){const email=String(currentUser?.email||"").trim().toLowerCase();return Object.values(profiles||{}).find(p=>String(p.email||"").trim().toLowerCase()===email)||null}
 function ownStudentName(){return ownStudentProfile()?.name||""}
 function displayChatName(){return isAdmin?"ADMIN":(ownStudentName()||currentUser?.displayName||currentUser?.email||"STUDENT")}
@@ -646,6 +647,8 @@ function updatePaymentQR(){
 }
 window.openProfile=async name=>{
   currentStudent=name;
+  const resolvedProfile=profileForName(name);
+  currentWorkProfileId=resolvedProfile?.id||keyFor(name);
   const isOwnProfile=isAdmin||String(name).trim().toLowerCase()===String(ownStudentName()).trim().toLowerCase();
   if(!isAdmin&&!isOwnProfile){const publicProfile=(directoryEntries||[]).find(d=>String(d.name||"").trim().toLowerCase()===String(name).trim().toLowerCase());if(publicProfile)profiles[keyFor(name)]={...publicProfile,id:publicProfile.id||keyFor(name)};}
   $("studentHome").classList.toggle("hidden",isAdmin);
@@ -662,10 +665,10 @@ window.openProfile=async name=>{
   const historyArea=document.querySelector("#profilePage .history");if(historyArea)historyArea.classList.remove("hidden");
   renderProfile(name);await loadAssignedWork(name);updatePaymentQR();scrollTo(0,0);
 };
-function renderProfile(name){let p=profiles[keyFor(name)]||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let rows=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date)));let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
+function renderProfile(name){let p=profileForName(name)||{};$("profileName").textContent=name;$("profileBranch").textContent="";$("profileDescriptionView").textContent=p.description||"";$("profileTagView").innerHTML=p.tag?`<span class="tag ${p.tag==='Vice Captain'?'vice':''}" style="font-size:13px">👑 ${esc(p.tag)}</span>`:"";$("profilePhoto").src=p.photoData||"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#e8e4ff"/><text x="50%" y="55%" text-anchor="middle" font-size="90">👨‍🎓</text></svg>`);let rows=records.filter(r=>String(r.student||"").trim().toLowerCase()===name.toLowerCase()).sort((a,b)=>String(b.date).localeCompare(String(a.date)));let box=$("profilePayments");box.innerHTML=rows.length?`<div class="history-row"><div>Date</div><div>Amount</div></div>`+rows.map(r=>`<div class="history-row"><div>📅 ${fmt(r.date)}</div><div><b>${money(r.payment)}</b></div></div>`).join(""):'<div class="empty">No payment history found.</div>';$("profileTotal").textContent=money(rows.reduce((s,r)=>s+Number(r.payment||0),0));updatePaymentQR()}
 let currentWorkProfileId=null;
-window.saveAssignedWork=async()=>{if(!isAdmin||!currentWorkProfileId){alert("Open a student profile first.");return}const work=$("assignedWorkInput").value.trim();const student=$("profileName").textContent.trim();try{await setDoc(doc(db,"studentAssignments",currentWorkProfileId),{profileId:currentWorkProfileId,student,work,updatedAt:Date.now(),updatedBy:currentUser.email},{merge:true});$("assignedWorkText").textContent=work||"No work assigned yet.";alert("Assigned work saved for "+student+".");}catch(e){alert("Could not save work: "+e.message)}};
-async function loadAssignedWork(name){const p=profiles[keyFor(name)]||{};currentWorkProfileId=p.id||keyFor(name);$("assignedWorkAdmin").classList.toggle("hidden",!isAdmin);try{const snap=await getDoc(doc(db,"studentAssignments",currentWorkProfileId));const work=snap.exists()?String(snap.data().work||""):"";$("assignedWorkText").textContent=work||"No work assigned yet.";if(isAdmin)$("assignedWorkInput").value=work;}catch(e){$("assignedWorkText").textContent="Work details unavailable.";}}
+window.saveAssignedWork=async()=>{if(!isAdmin||!currentWorkProfileId){alert("Open a student profile first.");return}const work=$("assignedWorkInput").value.trim();const student=$("profileName").textContent.trim();const profile=profileForName(student)||{};try{await setDoc(doc(db,"studentAssignments",currentWorkProfileId),{profileId:currentWorkProfileId,student,studentUid:String(profile.uid||""),work,updatedAt:Date.now(),updatedBy:currentUser.email},{merge:true});$("assignedWorkText").textContent=work||"No work assigned yet.";alert("Assigned work saved for "+student+".");}catch(e){alert("Could not save work: "+e.message)}};
+async function loadAssignedWork(name){const p=profileForName(name)||{};currentWorkProfileId=p.id||keyFor(name);$("assignedWorkAdmin").classList.toggle("hidden",!isAdmin);if(isAdmin)$("assignedWorkInput").value="";try{const snap=await getDoc(doc(db,"studentAssignments",currentWorkProfileId));const work=snap.exists()?String(snap.data().work||""):"";$("assignedWorkText").textContent=work||"No work assigned yet.";if(isAdmin)$("assignedWorkInput").value=work;}catch(e){console.error("Assigned work load failed",e);$("assignedWorkText").textContent="Work details unavailable. Please check assignment rules.";}}
 window.choosePhoto=()=>{if(isAdmin){alert("Admin photo upload is managed from the student profile manager.");return}editOwnProfilePhoto()};
 window.editOwnProfilePhoto=()=>{if(isAdmin||!ownStudentProfile()){alert("Student profile is not available.");return}$("photoInput").click();closeStudentStripMenu()};
 window.uploadPhoto=async ev=>{
