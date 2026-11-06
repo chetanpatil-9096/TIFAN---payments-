@@ -136,6 +136,22 @@ body:before{z-index:1;pointer-events:none}
 
 /* Move the complete student strip down below the Android status bar */
 @media(max-width:720px){.student-top-strip{margin-top:48px !important;top:48px !important}.student-strip-menu-wrap{top:0 !important}}
+
+/* FINAL FIX: move the entire student header strip, not only the menu */
+@media (max-width:720px){
+  #studentTopStrip.student-top-strip{
+    position:sticky !important;
+    top:12px !important;
+    margin-top:0 !important;
+    transform:translateY(12px) !important;
+    z-index:1000 !important;
+  }
+  #studentTopStrip .student-strip-menu-wrap{
+    position:relative !important;
+    top:0 !important;
+  }
+}
+
 </style>
 </head>
 <body>
