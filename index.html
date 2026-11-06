@@ -133,6 +133,9 @@ body.logged-in #loggedBackground{display:block}
 body:before{z-index:1;pointer-events:none}
 #loginScreen,#app{position:relative;z-index:2}
 
+
+/* Move the complete student strip down below the Android status bar */
+@media(max-width:720px){.student-top-strip{margin-top:48px !important;top:48px !important}.student-strip-menu-wrap{top:0 !important}}
 </style>
 </head>
 <body>
